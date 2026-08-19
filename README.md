@@ -14,6 +14,7 @@ A full-stack MERN application with real-time dynamic pricing, live availability 
 | Auth | JWT + bcrypt |
 | Real-time | Socket.io |
 | HTTP Client | Axios |
+| Payments | Razorpay Checkout |
 
 ---
 
@@ -48,11 +49,10 @@ smartstay/
 ### 1. Clone & install dependencies
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/Abhi31-balaga/SmartStay.git
 cd smartstay
-npm install          # installs concurrently
-cd server && npm install
-cd ../client && npm install
+npm install
+npm run install:all
 ```
 
 ### 2. Configure environment variables
@@ -69,6 +69,8 @@ PORT=5000
 MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/smartstay
 JWT_SECRET=your_super_secret_key_here
 CLIENT_URL=http://localhost:3000
+RAZORPAY_KEY_ID=rzp_test_your_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 NODE_ENV=development
 ```
 
@@ -78,10 +80,16 @@ NODE_ENV=development
 cd server && npm run seed
 ```
 
-This creates:
+This creates the initial demo data:
 - 8 hotels across major Indian cities
-- 4 room types per hotel (Standard, Deluxe, Suite, Executive)
+- 32 rooms
 - 3 test user accounts
+
+To add three hotels in each of India's 28 states (92 hotels total, including the seeded hotels):
+
+```bash
+cd server && npm run add-indian-hotels
+```
 
 **Test Accounts:**
 | Role | Email | Password |
@@ -146,7 +154,9 @@ npm run dev
 ### Bookings
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| POST | `/api/bookings` | User | Create booking |
+| POST | `/api/payments/order` | User | Create a Razorpay order for a booking |
+| POST | `/api/payments/verify` | User | Verify Razorpay payment and confirm booking |
+| POST | `/api/bookings` | User | Direct booking creation is blocked; payment is required |
 | GET | `/api/bookings/user` | User | My bookings |
 | GET | `/api/bookings/:id` | User/Admin | Booking detail |
 | DELETE | `/api/bookings/:id` | User/Admin | Cancel booking |
@@ -156,6 +166,18 @@ npm run dev
 |---|---|---|---|
 | GET | `/api/admin/stats` | Admin | Dashboard stats |
 | GET | `/api/admin/bookings` | Admin | All bookings |
+
+Admin detail pages:
+- `/admin/bookings` - all bookings
+- `/admin/users` - registered users
+- `/admin/hotels` - active hotels
+- `/admin/metrics` - occupancy and platform metrics
+
+### Payments
+
+SmartStay uses Razorpay in INR. The booking flow creates a pending booking, opens Razorpay Checkout, verifies the payment signature on the server, and only then marks the booking as confirmed and reduces room availability.
+
+Use Razorpay test keys during development. Never commit `server/.env`; it is ignored by Git. The public Razorpay key is sent to the browser, while `RAZORPAY_KEY_SECRET` stays on the server.
 
 ---
 
