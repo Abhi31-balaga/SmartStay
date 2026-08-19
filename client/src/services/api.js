@@ -42,7 +42,8 @@ export const roomService = {
 
 export const bookingService = {
   create: (data) => api.post('/bookings', data),
-  createCheckoutSession: (data) => api.post('/payments/checkout-session', data),
+  createPaymentOrder: (data) => api.post('/payments/order', data),
+  verifyPayment: (data) => api.post('/payments/verify', data),
   getMyBookings: (params) => api.get('/bookings/user', { params }),
   getById: (id) => api.get(`/bookings/${id}`),
   cancel: (id) => api.delete(`/bookings/${id}`),

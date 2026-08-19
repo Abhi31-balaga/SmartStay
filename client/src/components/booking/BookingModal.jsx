@@ -56,14 +56,34 @@ export default function BookingModal({ room, hotel, checkIn, checkOut, onClose, 
     setSubmitting(true);
     setError('');
     try {
-      const { data } = await bookingService.createCheckoutSession({
+      const { data } = await bookingService.createPaymentOrder({
         roomId: room._id,
         checkIn: formData.checkIn,
         checkOut: formData.checkOut,
         guestCount: formData.guestCount,
         specialRequests: formData.specialRequests,
       });
-      window.location.assign(data.data.checkoutUrl);
+      if (!window.Razorpay) throw new Error('Razorpay Checkout could not load. Check your internet connection.');
+      const checkout = new window.Razorpay({
+        key: data.data.keyId,
+        amount: data.data.amount,
+        currency: data.data.currency,
+        name: 'SmartStay',
+        description: `${hotel.name} · ${room.type} Room`,
+        order_id: data.data.orderId,
+        prefill: { email: JSON.parse(localStorage.getItem('user') || '{}').email || '' },
+        theme: { color: '#b7791f' },
+        handler: async (response) => {
+          try {
+            await bookingService.verifyPayment({ ...response, bookingId: data.data.bookingId });
+            navigate('/dashboard?payment=success');
+          } catch (err) {
+            setError(err.response?.data?.message || 'Payment verification failed. Please contact support.');
+          }
+        },
+        modal: { ondismiss: () => setSubmitting(false) },
+      });
+      checkout.open();
     } catch (err) {
       setError(err.response?.data?.message || 'Booking failed. Please try again.');
     } finally {
@@ -197,7 +217,7 @@ export default function BookingModal({ room, hotel, checkIn, checkOut, onClose, 
               </button>
 
               <p className="text-center text-xs text-gray-400">
-                Secure payment powered by Stripe · Free cancellation
+                Secure payment powered by Razorpay · Free cancellation
               </p>
             </div>
         </>

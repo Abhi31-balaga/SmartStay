@@ -11,7 +11,7 @@ const createBooking = async (req, res, next) => {
   try {
     return res.status(402).json({
       success: false,
-      message: 'Payment is required. Create a Stripe Checkout session before confirming a booking.',
+      message: 'Payment is required. Create a Razorpay order before confirming a booking.',
     });
 
     const { roomId, checkIn, checkOut, guestCount, specialRequests } = req.body;
