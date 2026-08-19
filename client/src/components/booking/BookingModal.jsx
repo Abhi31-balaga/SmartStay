@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Calendar, Users, CreditCard, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Calendar, Users, CreditCard, AlertCircle, Loader2 } from 'lucide-react';
 import { bookingService, pricingService } from '../../services/api';
 import { format, differenceInDays } from 'date-fns';
 import { useAuth } from '../../context/AuthContext';
@@ -19,8 +19,6 @@ export default function BookingModal({ room, hotel, checkIn, checkOut, onClose, 
   const [loadingPrice, setLoadingPrice] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [bookingRef, setBookingRef] = useState('');
 
   const nights = differenceInDays(new Date(formData.checkOut), new Date(formData.checkIn));
 
@@ -58,16 +56,14 @@ export default function BookingModal({ room, hotel, checkIn, checkOut, onClose, 
     setSubmitting(true);
     setError('');
     try {
-      const { data } = await bookingService.create({
+      const { data } = await bookingService.createCheckoutSession({
         roomId: room._id,
         checkIn: formData.checkIn,
         checkOut: formData.checkOut,
         guestCount: formData.guestCount,
         specialRequests: formData.specialRequests,
       });
-      setBookingRef(data.data.bookingRef);
-      setSuccess(true);
-      if (onSuccess) onSuccess(data.data);
+      window.location.assign(data.data.checkoutUrl);
     } catch (err) {
       setError(err.response?.data?.message || 'Booking failed. Please try again.');
     } finally {
@@ -80,29 +76,7 @@ export default function BookingModal({ room, hotel, checkIn, checkOut, onClose, 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-slide-up">
-        {success ? (
-          /* Success state */
-          <div className="p-8 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle size={40} className="text-green-500" />
-            </div>
-            <h2 className="font-display text-2xl font-bold text-navy-900 mb-2">Booking Confirmed!</h2>
-            <p className="text-gray-500 mb-1">Your reservation is all set.</p>
-            <p className="text-brand-600 font-mono font-bold text-lg mb-6">{bookingRef}</p>
-            <div className="bg-gray-50 rounded-2xl p-4 text-left mb-6 space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-gray-500">Hotel</span><span className="font-medium">{hotel.name}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Room</span><span className="font-medium">{room.type}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Check-in</span><span className="font-medium">{format(new Date(formData.checkIn), 'dd MMM yyyy')}</span></div>
-              <div className="flex justify-between"><span className="text-gray-500">Check-out</span><span className="font-medium">{format(new Date(formData.checkOut), 'dd MMM yyyy')}</span></div>
-              <div className="flex justify-between font-bold border-t pt-2"><span>Total Paid</span><span className="text-brand-700">₹{totalPrice.toLocaleString('en-IN')}</span></div>
-            </div>
-            <button onClick={() => navigate('/dashboard')} className="btn-primary w-full">
-              View My Bookings
-            </button>
-          </div>
-        ) : (
-          /* Booking form */
-          <>
+        <>
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <div>
                 <h2 className="font-display text-xl font-bold text-navy-900">Complete Booking</h2>
@@ -223,11 +197,10 @@ export default function BookingModal({ room, hotel, checkIn, checkOut, onClose, 
               </button>
 
               <p className="text-center text-xs text-gray-400">
-                Free cancellation · No credit card required now
+                Secure payment powered by Stripe · Free cancellation
               </p>
             </div>
-          </>
-        )}
+        </>
       </div>
     </div>
   );

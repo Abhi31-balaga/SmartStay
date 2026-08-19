@@ -43,6 +43,12 @@ const bookingSchema = new mongoose.Schema(
       enum: ['confirmed', 'cancelled', 'completed', 'pending'],
       default: 'confirmed',
     },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'paid', 'failed'],
+      default: 'paid',
+    },
+    stripeSessionId: { type: String, default: '' },
     guestCount: { type: Number, default: 1 },
     specialRequests: { type: String, default: '' },
     bookingRef: { type: String, unique: true },

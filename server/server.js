@@ -14,6 +14,8 @@ const bookingRoutes = require('./routes/bookings');
 const pricingRoutes = require('./routes/pricing');
 const adminRoutes = require('./routes/admin');
 const reviewRoutes = require('./routes/reviews');
+const paymentRoutes = require('./routes/payments');
+const { handleStripeWebhook } = require('./controllers/paymentController');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -45,6 +47,9 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'SmartStay API' });
 });
 
+// Stripe requires the unparsed request body for webhook signature verification.
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/hotels', hotelRoutes);
@@ -53,6 +58,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/pricing', pricingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // 404 handler
 app.use((req, res) => {
