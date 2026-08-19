@@ -88,6 +88,12 @@ const getAdminStats = async (req, res, next) => {
       .limit(10)
       .lean();
 
+    const registeredUsers = await User.find({ role: 'user' })
+      .select('name email role createdAt')
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .lean();
+
     res.json({
       success: true,
       data: {
@@ -103,6 +109,7 @@ const getAdminStats = async (req, res, next) => {
         monthlyRevenue,
         popularHotels,
         recentBookings,
+        registeredUsers,
       },
     });
   } catch (error) {

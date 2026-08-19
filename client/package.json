@@ -2,6 +2,7 @@
   "name": "smartstay-client",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@types/react": "^18.2.0",
     "axios": "^1.6.2",

@@ -12,6 +12,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
+import AdminDetailPage from './pages/AdminDetailPage';
 import AddHotelPage from './pages/AddHotelPage';
 
 // Pages that shouldn't show Navbar/Footer
@@ -62,6 +63,14 @@ export default function App() {
                 element={
                   <ProtectedRoute roles={['admin']}>
                     <AdminPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/:section"
+                element={
+                  <ProtectedRoute roles={['admin']}>
+                    <AdminDetailPage />
                   </ProtectedRoute>
                 }
               />

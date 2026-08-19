@@ -10,6 +10,12 @@ const seed = async () => {
   await connectDB();
   console.log('🌱 Seeding database...');
 
+  // Remove the legacy index from the old user schema before inserting users.
+  const userIndexes = await User.collection.indexes();
+  if (userIndexes.some((index) => index.name === 'username_1')) {
+    await User.collection.dropIndex('username_1');
+  }
+
   // Clear existing data
   await Promise.all([
     User.deleteMany({}),
